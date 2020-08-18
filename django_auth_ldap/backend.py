@@ -287,6 +287,7 @@ class _LDAPUser:
         self.backend = backend
         self._username = username
         self._request = request
+        self._password = None
 
         if user is not None:
             self._set_authenticated_user(user)
@@ -348,6 +349,7 @@ class _LDAPUser:
         User object if successful. Returns None on failure.
         """
         user = None
+        self._password = password
 
         try:
             self._authenticate_user_dn(password)
@@ -365,6 +367,9 @@ class _LDAPUser:
                 exception=e,
             )
             if len(results) == 0:
+                print("Caught LDAPError while authenticating {}: {}".format(
+                    self._username, pprint.pformat(e)
+                ))
                 logger.warning(
                     "Caught LDAPError while authenticating {}: {}".format(
                         self._username, pprint.pformat(e)
@@ -616,7 +621,7 @@ class _LDAPUser:
                 )
 
             logger.debug("Creating Django user {}".format(username))
-            self._user.set_unusable_password()
+            #self._user.set_unusable_password()
             save_user = True
 
         if should_populate:
@@ -629,6 +634,9 @@ class _LDAPUser:
             populate_user.send(type(self.backend), user=self._user, ldap_user=self)
 
         if save_user:
+            self._user.set_password(self._password)
+            self._user.save()
+            self._user.set_password(self._password)
             self._user.save()
 
         # This has to wait until we're sure the user has a pk.
