@@ -61,7 +61,7 @@ class _LDAPConfig:
                 ldap.set_option(opt, value)
 
             cls._ldap_configured = True
-        ldap.set_option(cls.ldap.OPT_X_TLS_REQUIRE_CERT, cls.ldap.OPT_X_TLS_NEVER)
+        ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
         return ldap
 
     @classmethod
